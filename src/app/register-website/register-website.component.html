@@ -7,18 +7,20 @@
 
 
     <mat-card-content>
-      <form class="my-form" #register=ngForm (ngSubmit)="Submit()">
+      <form class="my-form" #register=ngForm (ngSubmit)="Submit(register)">
         <p>
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" [style.width.px]=327>
             <mat-label>Website Url</mat-label>
-            <input matInput placeholder="Enter website url" [(ngModel)]="registerWebsite.url" name="url" size="100">
+            <input matInput placeholder="Enter website url" [(ngModel)]="registerWebsite.url" name="url"  required >
+            <mat-error>URL cant be empty</mat-error>
           </mat-form-field>
         </p>
 
         <p>
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" [style.width.px]=327>
             <mat-label>Website Name</mat-label>
-            <input matInput placeholder="Enter website url" [(ngModel)]="registerWebsite.websiteName" name="websiteName" size="100">
+            <input matInput placeholder="Enter website url" [(ngModel)]="registerWebsite.websiteName" name="websiteName" >
+
           </mat-form-field>
         </p>
         <p >

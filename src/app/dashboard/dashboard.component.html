@@ -4,13 +4,16 @@
     <td width="30%" style=" vertical-align:top">
       <mat-card style="height: 100%">
         <mat-card-content>
-          <mat-list *ngFor="let website of websiteList" [style.background]="'amber'" >
-            <mat-list-item ><a  class="spacer" (click)="monitor(website)">{{website.websiteName==null ? website.url:website.websiteName}}</a>
-            <mat-icon (click)="edit(website.webId)">edit</mat-icon>
-              <mat-icon (click)="removeWebsite(website.webId)">delete_outline</mat-icon>
-          </mat-list-item>
-          <mat-divider></mat-divider>
-          </mat-list>
+          <div class="list-container">
+            <mat-list class="list" *ngFor="let website of websiteList" [style.background]="'amber'" >
+              <mat-list-item ><a  class="spacer" (click)="monitor(website)">{{website.websiteName==null ? website.url:website.websiteName}}</a>
+                <mat-icon class="edit" (click)="edit(website.webId)">edit</mat-icon>
+                <mat-icon class="delete" (click)="removeWebsite(website.webId)">delete_outline</mat-icon>
+                <mat-divider></mat-divider>
+              </mat-list-item>
+
+            </mat-list>
+          </div>
           <p *ngIf="websiteList.length==0" >
             No Website is registered yet.
           </p>
@@ -19,12 +22,15 @@
    </td>
 <td><span>&nbsp;&nbsp;&nbsp;</span></td>
     <td width="70%">
-          <mat-tab-group (selectedTabChange)="onHistoryTabClick($event)">
+          <mat-tab-group (selectedTabChange)="onTabClick($event)">
             <mat-tab label="Real Time Chart">
               <div style="width: 700px">
-                <canvas id="chartId" width="200" height="100" >
-                </canvas>
-
+                <canvas id="chartId" width="200" height="100" ></canvas>
+              </div>
+            </mat-tab>
+            <mat-tab label="Today History">
+              <div style="width: 700px">
+                <canvas id="todayHistoryChart" width="200" height="100" ></canvas>
               </div>
             </mat-tab>
             <mat-tab label="History" >

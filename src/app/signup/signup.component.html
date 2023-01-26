@@ -7,24 +7,25 @@
 
 
     <mat-card-content>
-      <form class="my-form" #signup=ngForm (ngSubmit)="Submit()">
+      <form class="my-form" #signup=ngForm (ngSubmit)="Submit(signup)">
         <p>
           <mat-form-field appearance="fill">
             <mat-label>User Name</mat-label>
-            <input matInput placeholder="Enter user name" [(ngModel)]="user.userName" name="userName">
+            <input matInput placeholder="Enter user name" [(ngModel)]="user.userName" name="userName" required>
           </mat-form-field>
         </p>
         <p>
           <mat-form-field appearance="fill">
             <mat-label>Password</mat-label>
-            <input matInput placeholder="Enter password" [type]="'password'" [(ngModel)]="user.password" name="password">
+            <input matInput placeholder="Enter password" [type]="'password'" [(ngModel)]="user.password" name="password" required>
           </mat-form-field>
         </p>
 
         <p>
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
-            <input matInput placeholder="Enter Email" [type]="'email'" [(ngModel)]="user.email" name="email">
+            <input matInput placeholder="Enter Email" [type]="'email'" [(ngModel)]="user.email" name="email" email required>
+            <mat-error>Please enter valid email.</mat-error>
           </mat-form-field>
         </p>
 
@@ -39,7 +40,10 @@
           <button mat-raised-button type="submit" color="primary">Sign up</button>
         </p>
 
+        <p align="center">{{errorMsg}}</p>
       </form>
+
+      <p align="center">Or  <a routerLink="/login"> Login</a> instead</p>
     </mat-card-content>
   </mat-card>
 </div>

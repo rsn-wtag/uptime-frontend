@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl,FormGroup,Validators} from '@angular/forms';
+import {FormControl, FormGroup, NgForm, Validators} from '@angular/forms';
 import {User} from "../model/User";
 import {userError} from "@angular/compiler-cli/src/transformers/util";
 import {AuthService} from "../service/AuthService";
@@ -32,7 +32,8 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  Submit(){
+  Submit(loginForm: NgForm){
+    if(loginForm.invalid) return;
 
     this.authService.login(this.user).pipe(first()).subscribe(data=>{
 

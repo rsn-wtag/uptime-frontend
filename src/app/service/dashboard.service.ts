@@ -4,6 +4,7 @@ import {properties} from "../properties";
 import {WebsiteDetails} from "../model/WebsiteDetails";
 import {Observable} from "rxjs";
 import {DownTimeSummary} from "../model/DownTimeSummary";
+import {DownTime} from "../model/DownTime";
 
 @Injectable({
   providedIn: 'root'
@@ -39,4 +40,14 @@ export class DashboardService {
     )
   }
 
+  getTodayDownTimeHistoryToday(webId: number) {
+    return this.http.get<DownTime[]>(
+      properties.apiUrl + "website-management/websites/"+webId+"/down-time-history-today",
+      {
+        observe: 'response',
+        withCredentials: true
+      }
+
+    )
+  }
 }

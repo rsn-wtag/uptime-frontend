@@ -12,10 +12,12 @@ export class RegisterWebsiteService {
 
   }
 
-  registerWebsite(registerWebsite: WebsiteDetails):Observable<any>{
+  registerWebsite(registerWebsite: WebsiteDetails){
     return this.http.post(properties.apiUrl+'website-registration/register-website',
       registerWebsite,
-      {withCredentials:true}
+      {
+        observe: 'response',
+        withCredentials:true}
     );
   }
 }

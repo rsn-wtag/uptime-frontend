@@ -59,7 +59,7 @@ import {DatePipe} from "@angular/common";
 
 
   ],
-  providers: [DashboardService, AuthGuard,DatePipe],
+  providers: [DashboardService,authInterceptorProviders, AuthGuard,DatePipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

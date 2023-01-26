@@ -3,6 +3,7 @@ import {WebsiteDetails} from "../model/WebsiteDetails";
 import {TokenStorageService} from "../service/TokenStorageService";
 import {RegisterWebsiteService} from "../service/RegisterWebsiteService";
 import {ErrorMessage} from "../model/ErrorMessage";
+import {NgForm} from "@angular/forms";
 
 
 @Component({
@@ -20,14 +21,15 @@ export class RegisterWebsiteComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  Submit(){
+  Submit(register:NgForm){
+    if(register.invalid) return;
     this.registerWebsite.userId=this.tokenStorage.getUser().userId;
     this.registerWebsiteService.registerWebsite(this.registerWebsite).subscribe(data=>{
      //   let response= new Response();
       //  response= data as Response;
-        this.msg= data as string;
+        this.msg="Website Registered successfully";
         console.log("success");
-        console.log(data);
+
     },
       error => {
       console.log("coming error");
@@ -36,7 +38,7 @@ export class RegisterWebsiteComponent implements OnInit {
         console.log(JSON.stringify(errorObj));
         this.msg=errorObj.customMessage;
 
-      })
+      });
   }
 
 }

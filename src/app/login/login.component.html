@@ -7,17 +7,19 @@
 
 
     <mat-card-content>
-      <form class="my-form" #loginForm=ngForm (ngSubmit)="Submit()">
+      <form class="my-form" #loginForm=ngForm (ngSubmit)="Submit(loginForm)">
       <p>
       <mat-form-field appearance="fill">
         <mat-label>User Name</mat-label>
-        <input matInput placeholder="Enter user name" [(ngModel)]="user.userName" name="userName">
+        <input matInput placeholder="Enter user name" [(ngModel)]="user.userName" name="userName" required>
+        <mat-error>User name can't be empty</mat-error>
       </mat-form-field>
       </p>
       <p>
       <mat-form-field appearance="fill">
         <mat-label>Password</mat-label>
-        <input matInput placeholder="Enter password" [type]="'password'" [(ngModel)]="user.password" name="password">
+        <input matInput placeholder="Enter password" [type]="'password'" [(ngModel)]="user.password" name="password" required>
+        <mat-error>Password can't be empty</mat-error>
       </mat-form-field>
       </p>
 

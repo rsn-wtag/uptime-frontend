@@ -14,7 +14,13 @@ import Chart from 'chart.js/auto';
 import { DatePipe } from '@angular/common';
 import {DownTimeSummary} from "../model/DownTimeSummary";
 import 'chartjs-adapter-moment';
-import {Timestamp} from "rxjs/internal-compatibility";
+import * as moment from 'moment';
+import {DownTime} from "../model/DownTime";
+import {Moment} from "moment";
+import {D} from "@angular/cdk/keycodes";
+
+
+
 @Component({
   selector: 'dashboard',
   templateUrl: './dashboard.component.html',
@@ -32,6 +38,10 @@ export class DashboardComponent implements OnInit , AfterViewInit{
   totalUptimePercentage:number=0;
 
   historyPieChart:Chart;
+
+  lineChartTodayHistory:Chart;
+  downtimeList:DownTime[];
+  todayDowntimeChartData: any[]=[];
 
   //real time chart
   chartData:number[]= [];
@@ -65,7 +75,10 @@ export class DashboardComponent implements OnInit , AfterViewInit{
         datasets: [{
           label: this.charLabel,
           data: this.chartData,
-          borderWidth: 1
+          borderWidth: 1,
+          borderColor:'#9FF4CE',
+          pointBackgroundColor:'#19DF85',
+          backgroundColor:'#0AD277'
         }]
       },
       options: {
@@ -163,6 +176,10 @@ export class DashboardComponent implements OnInit , AfterViewInit{
       this.dataMap.set(uptimeStatus.webId, statusList);
       // @ts-ignore
       this.labelMap.set(uptimeStatus.webId, labelList);
+      this.todayDowntimeChartData.push({
+        x: new Date(uptimeStatus.time),
+        y: uptimeStatus.down ? 0:1
+      });
 
       if(uptimeStatus.webId==this.currentWebsite.webId){
         if(this.dataMap.get(uptimeStatus.webId)!=undefined)
@@ -183,6 +200,10 @@ export class DashboardComponent implements OnInit , AfterViewInit{
       this.dataMap.set(uptimeStatus.webId, statusList);
       // @ts-ignore
       this.labelMap.set(uptimeStatus.webId, labelList);
+      this.todayDowntimeChartData.push({
+        x: new Date(uptimeStatus.time),
+        y: uptimeStatus.down ? 0:1
+      });
       if(this.dataMap.get(uptimeStatus.webId)!=undefined)
       { // @ts-ignore
         this.refreshChart(uptimeStatus.webId);
@@ -205,6 +226,8 @@ export class DashboardComponent implements OnInit , AfterViewInit{
     this.realTimeChart.data.labels=this.chartLabels;
     this.realTimeChart.data.datasets[0].label=this.charLabel;
     this.realTimeChart.update();
+    this.lineChartTodayHistory.data.datasets[0].data=this.todayDowntimeChartData;
+    this.lineChartTodayHistory.update();
   }
 
   showDefaultChart(){
@@ -254,13 +277,16 @@ export class DashboardComponent implements OnInit , AfterViewInit{
     this.charLabel=websiteDetails.url.toString();
     this.refreshChart(websiteDetails.webId);
     this.getWebsiteDayWiseDownTimeHistory();
+    this.createLineChartTodayHistory();
   };
   //endregion
 
   //region website history
-  onHistoryTabClick(event){
+  onTabClick(event){
     if(event.tab.textLabel=="History"){
       this.getWebsiteDayWiseDownTimeHistory();
+    }else if(event.tab.textLabel=="Today History"){
+      this.createLineChartTodayHistory();
     }
   }
   getWebsiteDayWiseDownTimeHistory(){
@@ -289,7 +315,6 @@ export class DashboardComponent implements OnInit , AfterViewInit{
     });
 
     this.totalUptimePercentage=this.totalUptimePercentage/this.downtimeHistory.length;
-    console.log(this.totalUptimePercentage+"  ========="+ this.downtimeHistory.length);
     const ctx = document.getElementById('historyChartId');
     if( this.historyChart)
     this.historyChart.destroy();
@@ -301,7 +326,9 @@ export class DashboardComponent implements OnInit , AfterViewInit{
         datasets: [{
           label: this.charLabel,
           data: historyChartData,
-          borderWidth: 1
+          borderWidth: 1,
+          borderColor: '#9FF4CE',
+          backgroundColor:'#6FF18A'
         }]
       },
       options: {
@@ -331,6 +358,7 @@ export class DashboardComponent implements OnInit , AfterViewInit{
         datasets: [{
           //label: this.charLabel,
           data: [this.totalUptimePercentage, 100.00-this.totalUptimePercentage],
+          backgroundColor:['#0AD234','#D2190A']
 
         }]
       },
@@ -354,6 +382,91 @@ export class DashboardComponent implements OnInit , AfterViewInit{
     });
   }
 
+  createLineChartTodayHistory(){
+    this.dashboardService.getTodayDownTimeHistoryToday(this.currentWebsite.webId).subscribe(data=>{
+      this.downtimeList= data.body as DownTime[];
+      this.todayDowntimeChartData=[];
+
+      let currentDate = moment().startOf('day').hour(0);
+      let endDate = moment();
+      for (let m = currentDate; m.isSameOrBefore(endDate); m.add(5, 'minutes')) {
+        if(this.checkIsDown(m))
+          this.todayDowntimeChartData.push({
+            x: m.toDate(),
+            y: 0
+          });
+        else
+          this.todayDowntimeChartData.push({
+            x: m.toDate(),
+            y: 1
+          });
+      }
+      console.log( this.todayDowntimeChartData);
+      if(this.lineChartTodayHistory)
+        this.lineChartTodayHistory.destroy();
+      console.log(this.lineChartTodayHistory);
+      //create chart
+      const ctx = document.getElementById('todayHistoryChart');
+      // @ts-ignore
+      this.lineChartTodayHistory= new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: this.charLabel,
+            data: this.todayDowntimeChartData,
+            borderWidth: 2,
+            borderColor:'#9FF4CE',
+            pointBackgroundColor:'#19DF85',
+            backgroundColor:'#0AD277',
+            radius: 0
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              ticks: {
+                callback:function(value, index, ticks) {
+                  if(value==1)
+                    return 'UP';
+                  else if(value==0)
+                    return 'DOWN';
+                  else return '';
+                }
+              },
+              beginAtZero: true,
+              max:2,
+            },
+              x: {
+                type: 'time',
+                time: {
+                  // Luxon format string
+                  tooltipFormat: 'DD T',
+                  //minUnit:'second',
+
+                },
+
+              }
+          }
+        }
+      });
+
+    });
+
+  }
+
+  checkIsDown(moment:Moment){
+    let isDown:boolean=false;
+    this.downtimeList.forEach(downtime=>{
+      console.log('=========='+moment.toDate()+"        "+ downtime.downTimeId+"     "+new Date(downtime.startTime)+'    '+ new Date(downtime.endTime));
+      let endTime;
+      if(downtime.endTime) endTime=downtime.endTime;
+      else endTime=new Date();
+      if(moment.isBetween( new Date(downtime.startTime), endTime))
+          isDown=true;
+    });
+    return isDown;
+  }
  //endregion
 
 }

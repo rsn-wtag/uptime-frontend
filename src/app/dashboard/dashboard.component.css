@@ -1,0 +1,22 @@
+.list-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 600px;
+  overflow: scroll;
+}
+
+.list {
+  flex: 1;
+}
+
+.mat-list:hover{
+  background-color: rgb(206, 206, 206);
+}
+.mat-icon.delete:hover{
+  color: red;
+  cursor: pointer;
+}
+.mat-icon.edit:hover{
+  color: cornflowerblue;
+  cursor: pointer;
+}
