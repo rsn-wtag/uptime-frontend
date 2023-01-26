@@ -1,0 +1,10 @@
+.main-div{
+  height: 20vh;
+  display: flex;
+  justify-content: center;
+
+  align-items: center;
+}
+.custom.mat-card{
+  padding: 30px;
+}

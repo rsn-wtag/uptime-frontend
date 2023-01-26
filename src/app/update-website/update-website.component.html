@@ -1,0 +1,33 @@
+
+<body>
+<div class="main-div" >
+  <mat-card class="custom" >
+
+    <mat-card-content>
+      <form class="my-form" #updateWebsite=ngForm (ngSubmit)="Submit()">
+        <p>
+          <mat-form-field appearance="fill" [style.width.px]=327>
+            <mat-label>URL</mat-label>
+            <input matInput placeholder="Enter url" [(ngModel)]="websiteDetails.url" name="url" >
+          </mat-form-field>
+        </p>
+        <p>
+          <mat-form-field appearance="fill" [style.width.px]=327>
+            <mat-label>Website Name</mat-label>
+            <input matInput placeholder="Enter Website name" [(ngModel)]="websiteDetails.websiteName" name="websiteName">
+          </mat-form-field>
+        </p>
+
+
+        <p >
+          <button mat-raised-button type="submit" color="primary">Update</button>
+        </p>
+
+      </form>
+    </mat-card-content>
+    <mat-card-footer>
+      <span>{{msg}}</span>
+    </mat-card-footer>
+  </mat-card>
+</div>
+</body>

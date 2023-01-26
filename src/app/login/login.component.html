@@ -1,0 +1,36 @@
+<body>
+<div class="main-div">
+  <mat-card class="custom">
+    <mat-card-header>
+      <div style="padding-bottom: 20px;">Welcome to Uptime</div>
+    </mat-card-header>
+
+
+    <mat-card-content>
+      <form class="my-form" #loginForm=ngForm (ngSubmit)="Submit()">
+      <p>
+      <mat-form-field appearance="fill">
+        <mat-label>User Name</mat-label>
+        <input matInput placeholder="Enter user name" [(ngModel)]="user.userName" name="userName">
+      </mat-form-field>
+      </p>
+      <p>
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput placeholder="Enter password" [type]="'password'" [(ngModel)]="user.password" name="password">
+      </mat-form-field>
+      </p>
+
+          <p align="center">
+            <button mat-raised-button type="submit" color="primary">LOGIN</button>
+          </p>
+
+      </form>
+      <p>Or <a routerLink="/signup">Sign up</a> now</p>
+    </mat-card-content>
+    <mat-card-footer>
+      <span>{{errorMessage}}</span>
+    </mat-card-footer>
+  </mat-card>
+</div>
+</body>

@@ -1,0 +1,35 @@
+<body>
+<div class="main-div">
+  <mat-card class="custom">
+    <mat-card-header>
+      <div style="padding-bottom: 20px;">Register a Website</div>
+    </mat-card-header>
+
+
+    <mat-card-content>
+      <form class="my-form" #register=ngForm (ngSubmit)="Submit()">
+        <p>
+          <mat-form-field appearance="fill">
+            <mat-label>Website Url</mat-label>
+            <input matInput placeholder="Enter website url" [(ngModel)]="registerWebsite.url" name="url" size="100">
+          </mat-form-field>
+        </p>
+
+        <p>
+          <mat-form-field appearance="fill">
+            <mat-label>Website Name</mat-label>
+            <input matInput placeholder="Enter website url" [(ngModel)]="registerWebsite.websiteName" name="websiteName" size="100">
+          </mat-form-field>
+        </p>
+        <p >
+          <button mat-raised-button type="submit" color="primary">Register</button>
+        </p>
+
+      </form>
+    </mat-card-content>
+    <mat-card-footer>
+      <span>{{msg}}</span>
+    </mat-card-footer>
+  </mat-card>
+</div>
+</body>
