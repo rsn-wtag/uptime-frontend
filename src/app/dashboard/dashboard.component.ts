@@ -1,15 +1,13 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {WebSocketConfig} from "../websocket/WebSocketConfig";
-import {DashboardService} from "../service/dashboard.service";
+import {DowntimeInfoService} from "../service/downtime-info.service";
 import {WebsiteDetails} from "../model/WebsiteDetails";
 import {UptimeStatus} from "../model/UptimeStatus";
 
-import {AuthService} from "../service/AuthService";
-import {TokenStorageService} from "../service/TokenStorageService";
+import {UserStorageService} from "../service/user-storage.service";
 import {Router} from "@angular/router";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import _default from "chart.js/dist/plugins/plugin.tooltip";
-import duration = _default.defaults.animation.duration;
+
 import Chart from 'chart.js/auto';
 import { DatePipe } from '@angular/common';
 import {DownTimeSummary} from "../model/DownTimeSummary";
@@ -17,7 +15,7 @@ import 'chartjs-adapter-moment';
 import * as moment from 'moment';
 import {DownTime} from "../model/DownTime";
 import {Moment} from "moment";
-import {D} from "@angular/cdk/keycodes";
+import {WebsiteService} from "../service/website.service";
 
 
 
@@ -31,6 +29,8 @@ export class DashboardComponent implements OnInit , AfterViewInit{
   webSocketConfig: WebSocketConfig;
   websiteList: WebsiteDetails[]= [];
 
+  currentTab:string='Real Time Chart';
+
   //history part
   downtimeHistory:DownTimeSummary[]=[];
   historyChart:Chart;
@@ -42,6 +42,7 @@ export class DashboardComponent implements OnInit , AfterViewInit{
   lineChartTodayHistory:Chart;
   downtimeList:DownTime[];
   todayDowntimeChartData: any[]=[];
+
 
   //real time chart
   chartData:number[]= [];
@@ -55,7 +56,7 @@ export class DashboardComponent implements OnInit , AfterViewInit{
 
    currentWebsite:WebsiteDetails;
 
-  constructor(private dashboardService: DashboardService, private tokenStorage:TokenStorageService,
+  constructor(private downtimeInfoService: DowntimeInfoService, private tokenStorage:UserStorageService, private websiteService:WebsiteService,
               private router:Router, private snackBar:MatSnackBar, private datePipe:DatePipe) { }
 
    ngOnInit(): void {
@@ -118,7 +119,7 @@ export class DashboardComponent implements OnInit , AfterViewInit{
   //region fetch website list and establish socket connection
   getWebsiteListAndSubscribe(){
     this.webSocketConfig = new WebSocketConfig(this);
-    this.getWebsiteList(this.tokenStorage.getUser().userId)
+    this.getWebsiteList()
       .then(()=> {
         if(this.websiteList.length>0){
           this.connect(this.websiteList);
@@ -128,8 +129,8 @@ export class DashboardComponent implements OnInit , AfterViewInit{
       });
   }
 
-  getWebsiteList(userId: number) {
-    return this.dashboardService.getWebsiteList(userId).toPromise()
+  getWebsiteList() {
+    return this.websiteService.getWebsiteList().toPromise()
       .then(resp => {
       console.log("in get list....");
       if (resp.body) {
@@ -166,20 +167,16 @@ export class DashboardComponent implements OnInit , AfterViewInit{
     let uptimeStatus= (JSON.parse(message)) as UptimeStatus;
     let statusList= this.dataMap.get(uptimeStatus.webId);
     let labelList= this.labelMap.get(uptimeStatus.webId);
+
     if(statusList && labelList){
 
       statusList.push( uptimeStatus.down ? 0:1);
-
       // @ts-ignore
       labelList.push(this.datePipe.transform(uptimeStatus.time,'HH:mm:ss') );
 
       this.dataMap.set(uptimeStatus.webId, statusList);
       // @ts-ignore
       this.labelMap.set(uptimeStatus.webId, labelList);
-      this.todayDowntimeChartData.push({
-        x: new Date(uptimeStatus.time),
-        y: uptimeStatus.down ? 0:1
-      });
 
       if(uptimeStatus.webId==this.currentWebsite.webId){
         if(this.dataMap.get(uptimeStatus.webId)!=undefined)
@@ -187,9 +184,7 @@ export class DashboardComponent implements OnInit , AfterViewInit{
             this.refreshChart(uptimeStatus.webId);
           }
       }
-
     }else{
-
       // @ts-ignore
       let statusList:number[] =[];
       let labelList:string[]=[];
@@ -200,13 +195,22 @@ export class DashboardComponent implements OnInit , AfterViewInit{
       this.dataMap.set(uptimeStatus.webId, statusList);
       // @ts-ignore
       this.labelMap.set(uptimeStatus.webId, labelList);
-      this.todayDowntimeChartData.push({
-        x: new Date(uptimeStatus.time),
-        y: uptimeStatus.down ? 0:1
-      });
+
       if(this.dataMap.get(uptimeStatus.webId)!=undefined)
       { // @ts-ignore
         this.refreshChart(uptimeStatus.webId);
+      }
+    }
+
+    if(this.todayDowntimeChartData){
+      console.log(  "---------------------"+new Date(uptimeStatus.time));
+      if(this.currentWebsite.webId==uptimeStatus.webId){
+          this.todayDowntimeChartData.push({
+            x: moment().utc().toDate(),
+            y: uptimeStatus.down ? 0:1
+          });
+
+        this.refreshLineChartTodayHistory();
       }
     }
 
@@ -226,80 +230,21 @@ export class DashboardComponent implements OnInit , AfterViewInit{
     this.realTimeChart.data.labels=this.chartLabels;
     this.realTimeChart.data.datasets[0].label=this.charLabel;
     this.realTimeChart.update();
-    this.lineChartTodayHistory.data.datasets[0].data=this.todayDowntimeChartData;
-    this.lineChartTodayHistory.update();
-  }
 
+
+  }
+  refreshLineChartTodayHistory(){
+    if( this.lineChartTodayHistory){
+      this.lineChartTodayHistory.data.datasets[0].data=this.todayDowntimeChartData;
+      this.lineChartTodayHistory.update();
+    }
+  }
   showDefaultChart(){
     this.realTimeChart.data.datasets[0].data=[];
     this.realTimeChart.data.datasets[0].label='';
     this.realTimeChart.data.labels=[];
     this.realTimeChart.update();
   }
-  //endregion
-
-  //region List edit delete
-  removeWebsite(webId){
-    this.dashboardService.removeWebsite(this.tokenStorage.getUser().userId, webId).subscribe(data=>{
-          this.snackBar.open("Website Deleted successfully", '',{duration:3000});
-          this.removeWebsiteFromList(webId);
-    },error => {
-
-    });
-  }
-
-  removeWebsiteFromList(webId){
-    let removedWebsiteIndex;
-    for(const [key, website] of this.websiteList.entries()){
-      if(website.webId==webId){
-        removedWebsiteIndex=key;
-        break;
-      }
-    }
-    this.websiteList.splice(removedWebsiteIndex,1);
-    if(this.websiteList[0]) {
-      this.currentWebsite = this.websiteList[0];
-      this.refreshChart(this.currentWebsite.webId);
-    }
-    else{
-      this.currentWebsite=new WebsiteDetails();
-      this.showDefaultChart();
-    }
-
-  }
-
-  edit(webId){
-    this.router.navigate(['/update-website', {webId: webId}]);
-  }
-
-  monitor(websiteDetails:WebsiteDetails){
-    this.currentWebsite=websiteDetails;
-    this.charLabel=websiteDetails.url.toString();
-    this.refreshChart(websiteDetails.webId);
-    this.getWebsiteDayWiseDownTimeHistory();
-    this.createLineChartTodayHistory();
-  };
-  //endregion
-
-  //region website history
-  onTabClick(event){
-    if(event.tab.textLabel=="History"){
-      this.getWebsiteDayWiseDownTimeHistory();
-    }else if(event.tab.textLabel=="Today History"){
-      this.createLineChartTodayHistory();
-    }
-  }
-  getWebsiteDayWiseDownTimeHistory(){
-    this.dashboardService.getWebsiteDayWiseDownTimeHistory(this.currentWebsite.webId).subscribe(data=>{
-      this.downtimeHistory= data.body as DownTimeSummary[];
-      this.createHistoryBarChart();
-      this.createHistoryPiChart();
-    },error => {
-
-    });
-
-  }
-
 
   createHistoryBarChart(){
     let historyChartLabels= [];
@@ -317,7 +262,7 @@ export class DashboardComponent implements OnInit , AfterViewInit{
     this.totalUptimePercentage=this.totalUptimePercentage/this.downtimeHistory.length;
     const ctx = document.getElementById('historyChartId');
     if( this.historyChart)
-    this.historyChart.destroy();
+      this.historyChart.destroy();
     // @ts-ignore
     this.historyChart= new Chart(ctx, {
       type: 'bar',
@@ -376,19 +321,21 @@ export class DashboardComponent implements OnInit , AfterViewInit{
               return data+'%';
             }
           }
-          }
+        }
       }
 
     });
   }
 
   createLineChartTodayHistory(){
-    this.dashboardService.getTodayDownTimeHistoryToday(this.currentWebsite.webId).subscribe(data=>{
+    this.downtimeInfoService.getTodayDownTimeHistoryToday(this.currentWebsite.webId).subscribe(data=>{
       this.downtimeList= data.body as DownTime[];
       this.todayDowntimeChartData=[];
 
-      let currentDate = moment().startOf('day').hour(0);
-      let endDate = moment();
+      let currentDate = moment().utc().startOf('day');
+      console.log(currentDate.toDate()+"=======================");
+      let endDate = moment().utc();
+      console.log(endDate+"=======================");
       for (let m = currentDate; m.isSameOrBefore(endDate); m.add(5, 'minutes')) {
         if(this.checkIsDown(m))
           this.todayDowntimeChartData.push({
@@ -437,16 +384,14 @@ export class DashboardComponent implements OnInit , AfterViewInit{
               beginAtZero: true,
               max:2,
             },
-              x: {
-                type: 'time',
-                time: {
-                  // Luxon format string
-                  tooltipFormat: 'DD T',
-                  //minUnit:'second',
-
-                },
-
-              }
+            x: {
+              type: 'time',
+              time: {
+                // Luxon format string
+                //tooltipFormat: 'DD T',
+                //minUnit:'second',
+              },
+            }
           }
         }
       });
@@ -455,17 +400,90 @@ export class DashboardComponent implements OnInit , AfterViewInit{
 
   }
 
-  checkIsDown(moment:Moment){
+  checkIsDown(currMoment:Moment){
     let isDown:boolean=false;
     this.downtimeList.forEach(downtime=>{
-      console.log('=========='+moment.toDate()+"        "+ downtime.downTimeId+"     "+new Date(downtime.startTime)+'    '+ new Date(downtime.endTime));
+      console.log('=========='+currMoment.toDate()+"        "+ downtime.downTimeId+"     "+new Date(downtime.startTime)+'    '+ new Date(downtime.endTime));
       let endTime;
-      if(downtime.endTime) endTime=downtime.endTime;
-      else endTime=new Date();
-      if(moment.isBetween( new Date(downtime.startTime), endTime))
-          isDown=true;
+      if(downtime.endTime) endTime = downtime.endTime;
+      else { // @ts-ignore
+        endTime= moment().utc();
+      }
+      if(currMoment.isBetween( downtime.startTime, endTime))
+        isDown=true;
     });
     return isDown;
+  }
+  //endregion
+
+  //region List edit delete
+  removeWebsite(webId){
+    this.websiteService.removeWebsite( webId).subscribe(data=>{
+          this.snackBar.open("Website Deleted successfully", '',{duration:3000});
+          this.removeWebsiteFromList(webId);
+    },error => {
+
+    });
+  }
+
+  removeWebsiteFromList(webId){
+    let removedWebsiteIndex;
+    for(const [key, website] of this.websiteList.entries()){
+      if(website.webId==webId){
+        removedWebsiteIndex=key;
+        break;
+      }
+    }
+    this.websiteList.splice(removedWebsiteIndex,1);
+    if(this.websiteList[0]) {
+      this.currentWebsite = this.websiteList[0];
+      this.refreshChart(this.currentWebsite.webId);
+    }
+    else{
+      this.currentWebsite=new WebsiteDetails();
+      this.showDefaultChart();
+    }
+
+  }
+
+  edit(webId){
+    this.router.navigate(['/update-website', {webId: webId}]);
+  }
+
+  onListItemClick(websiteDetails:WebsiteDetails){
+    this.currentWebsite=websiteDetails;
+    this.charLabel=websiteDetails.url.toString();
+
+    if(this.currentTab=='Real Time Chart')
+      this.refreshChart(websiteDetails.webId);
+    else if(this.currentTab=='History')
+      this.getWebsiteDayWiseDownTimeHistory();
+    else if(this.currentTab=='Today History')
+      this.createLineChartTodayHistory();
+  };
+  //endregion
+
+  //region website history
+  onTabClick(event){
+    if(event.tab.textLabel=="History"){
+      this.currentTab='History';
+      this.getWebsiteDayWiseDownTimeHistory();
+    }else if(event.tab.textLabel=="Today History"){
+      this.createLineChartTodayHistory();
+      this.currentTab='Today History';
+    }else{
+      this.currentTab='Real Time Chart';
+    }
+  }
+  getWebsiteDayWiseDownTimeHistory(){
+    this.downtimeInfoService.getWebsiteDayWiseDownTimeHistory(this.currentWebsite.webId).subscribe(data=>{
+      this.downtimeHistory= data.body as DownTimeSummary[];
+      this.createHistoryBarChart();
+      this.createHistoryPiChart();
+    },error => {
+
+    });
+
   }
  //endregion
 

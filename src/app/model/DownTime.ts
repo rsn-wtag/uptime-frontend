@@ -1,11 +1,9 @@
-import * as moment from "moment";
-
 export class DownTime {
    downTimeId:number;
 
    webId:number;
 
-   startTime: Date;
+   startTime:Date;
 
    endTime:Date;
 

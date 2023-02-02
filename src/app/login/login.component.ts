@@ -1,12 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import {FormControl, FormGroup, NgForm, Validators} from '@angular/forms';
+import {NgForm, Validators} from '@angular/forms';
 import {User} from "../model/User";
-import {userError} from "@angular/compiler-cli/src/transformers/util";
 import {AuthService} from "../service/AuthService";
-import {TokenStorageService} from "../service/TokenStorageService";
-import {JwtResponse} from "../model/JwtResponse";
+import {UserStorageService} from "../service/user-storage.service";
 import {Router} from "@angular/router";
-import {Store} from "@ngxs/store";
 import {first} from "rxjs/operators";
 import {ErrorMessage} from "../model/ErrorMessage";
 @Component({
@@ -22,7 +19,7 @@ export class LoginComponent implements OnInit {
   errorMessage = '';
 
   roles: string[] = [];
-  constructor(private authService: AuthService, private tokenService:TokenStorageService, private router: Router) { }
+  constructor(private authService: AuthService, private tokenService:UserStorageService, private router: Router) { }
 
   ngOnInit(): void {
     if (this.tokenService.getUser().userId) {
@@ -43,7 +40,10 @@ export class LoginComponent implements OnInit {
       error => {
 
         let errorObj= error.error as ErrorMessage;
-        this.errorMessage=errorObj.customMessage;
+        if(errorObj)
+           this.errorMessage=errorObj.customMessage;
+        else
+          this.errorMessage="Some error occurred. please try again later."
         console.log(errorObj);
         console.log("coming error");
 

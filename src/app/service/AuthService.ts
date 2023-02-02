@@ -5,7 +5,6 @@ import {properties} from "../properties";
 import {JwtResponse} from "../model/JwtResponse";
 import {BehaviorSubject, Observable} from "rxjs";
 import {map} from "rxjs/operators";
-import {TokenStorageService} from "./TokenStorageService";
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -31,7 +30,7 @@ export class AuthService {
         .pipe(map(resp => {
           console.log("=================coming login....");
           let data=resp as JwtResponse;
-          user.userId=data.userId;
+          user=data.userDTO;
         // store user details and jwt token in local storage to keep user logged in between page refreshes
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.currentUserSubject.next(user);
@@ -54,13 +53,19 @@ export class AuthService {
       .pipe(map(resp => {
       console.log("=================coming register....");
       let data=resp as JwtResponse;
-      user.userId=data.userId;
-      // store user details and jwt token in local storage to keep user logged in between page refreshes
+      user=data.userDTO;
+     /* // store user details and jwt token in local storage to keep user logged in between page refreshes
       localStorage.setItem('currentUser', JSON.stringify(user));
-      this.currentUserSubject.next(user);
-
+      this.currentUserSubject.next(user);*/
+      this.saveUser(user);
       return user;
     }));
+  }
+
+  saveUser(user:User){
+    // store user details and jwt token in local storage to keep user logged in between page refreshes
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
 

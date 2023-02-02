@@ -19,8 +19,8 @@
         <p>
           <mat-form-field appearance="fill" [style.width.px]=327>
             <mat-label>Website Name</mat-label>
-            <input matInput placeholder="Enter website url" [(ngModel)]="registerWebsite.websiteName" name="websiteName" >
-
+            <input matInput placeholder="Enter website url" [(ngModel)]="registerWebsite.websiteName" #websiteName="ngModel" name="websiteName"  >
+            <mat-error *ngIf="websiteName.invalid">{{errorMessageHandler.getErrorMessage('websiteName', register)}}</mat-error>
           </mat-form-field>
         </p>
         <p >

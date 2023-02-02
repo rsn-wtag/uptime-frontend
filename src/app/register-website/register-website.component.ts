@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import {WebsiteDetails} from "../model/WebsiteDetails";
-import {TokenStorageService} from "../service/TokenStorageService";
-import {RegisterWebsiteService} from "../service/RegisterWebsiteService";
+import {UserStorageService} from "../service/user-storage.service";
 import {ErrorMessage} from "../model/ErrorMessage";
 import {NgForm} from "@angular/forms";
+import {HttpStatusCode} from "@angular/common/http";
+import {UnprocessableEntityErrorMessage} from "../model/UnprocessableEntityErrorMessage";
+import {ErrorMessageHandler} from "../error-handler/ErrorMessageHandler";
+import {WebsiteService} from "../service/website.service";
 
 
 @Component({
@@ -14,17 +17,21 @@ import {NgForm} from "@angular/forms";
 export class RegisterWebsiteComponent implements OnInit {
 
   registerWebsite:WebsiteDetails= new WebsiteDetails();
-  msg:string="";
+  msg:String="";
 
-  constructor(private  tokenStorage: TokenStorageService, private  registerWebsiteService:RegisterWebsiteService) { }
+  errorMessageHandler:ErrorMessageHandler= new ErrorMessageHandler();
+  constructor(private  tokenStorage: UserStorageService, private  websiteService:WebsiteService) { }
 
   ngOnInit(): void {
   }
 
   Submit(register:NgForm){
     if(register.invalid) return;
+
+    /*console.log(register.control.get("url"));
+    return;*/
     this.registerWebsite.userId=this.tokenStorage.getUser().userId;
-    this.registerWebsiteService.registerWebsite(this.registerWebsite).subscribe(data=>{
+    this.websiteService.registerWebsite(this.registerWebsite).subscribe(data=>{
      //   let response= new Response();
       //  response= data as Response;
         this.msg="Website Registered successfully";
@@ -32,13 +39,20 @@ export class RegisterWebsiteComponent implements OnInit {
 
     },
       error => {
-      console.log("coming error");
-      console.log(JSON.stringify(error.error));
-        let errorObj= error.error as ErrorMessage;
-        console.log(JSON.stringify(errorObj));
-        this.msg=errorObj.customMessage;
+      //console.log("coming error");
+      //console.log(JSON.stringify(error.error));
 
+        if(error.status==HttpStatusCode.UnprocessableEntity){
+          console.log(error.error);
+          let unprocError= error.error as UnprocessableEntityErrorMessage;
+          this.msg=this.errorMessageHandler.handleUnprocessableEntityError(unprocError,register.control);
+        }else{
+          let errorObj= error.error as ErrorMessage;
+          this.msg=errorObj.customMessage;
+        }
       });
   }
+
+
 
 }

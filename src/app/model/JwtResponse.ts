@@ -1,8 +1,8 @@
+import {User} from "./User";
+
 export  class JwtResponse{
   jwtToken: string;
-
-  userId:number;
-  userName: string;
+  userDTO:User;
   roles:string[];
 
 

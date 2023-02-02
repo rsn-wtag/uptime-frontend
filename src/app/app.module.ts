@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import {HttpClientModule} from "@angular/common/http";
 import { DashboardComponent } from './dashboard/dashboard.component';
-import {DashboardService} from "./service/dashboard.service";
+import {DowntimeInfoService} from "./service/downtime-info.service";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatListModule} from "@angular/material/list";
 import {MatSidenavModule} from "@angular/material/sidenav";
@@ -19,13 +19,14 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {AuthInterceptor, authInterceptorProviders} from "./authentication/AuthInterceptor";
+import {authInterceptorProviders} from "./authentication/AuthInterceptor";
 import { SignupComponent } from './signup/signup.component';
 import { RegisterWebsiteComponent } from './register-website/register-website.component';
 import {AuthGuard} from "./authentication/AuthGuard";
 import { UpdateWebsiteComponent } from './update-website/update-website.component';
-import {MatSnackBar, MatSnackBarModule} from "@angular/material/snack-bar";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {DatePipe} from "@angular/common";
+import { EditUserComponent } from './edit-user/edit-user.component';
 
 
 
@@ -36,7 +37,8 @@ import {DatePipe} from "@angular/common";
     LoginComponent,
     SignupComponent,
     RegisterWebsiteComponent,
-    UpdateWebsiteComponent
+    UpdateWebsiteComponent,
+    EditUserComponent
   ],
   imports: [
     BrowserModule,
@@ -59,7 +61,7 @@ import {DatePipe} from "@angular/common";
 
 
   ],
-  providers: [DashboardService,authInterceptorProviders, AuthGuard,DatePipe],
+  providers: [DowntimeInfoService,authInterceptorProviders, AuthGuard,DatePipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -322,7 +322,11 @@
       <a  mat-button  routerLink="/dashboard" ><span style="color: #e6ebf1">Home</span></a>
       <a  mat-button  routerLink="/register" ><span style="color: #e6ebf1">Register Website</span></a>
   </span>
+    <span style="color: #e6ebf1">{{currentUser.userName}}</span>   <mat-icon class="edit" (click)="editUser()">edit</mat-icon>
+    &nbsp;
     <a mat-raised-button  (click)="logout()"> Logout</a>
+
+
 
   </mat-toolbar-row>
 </mat-toolbar>

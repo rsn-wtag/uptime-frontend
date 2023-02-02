@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {User} from "../model/User";
 import {AuthService} from "../service/AuthService";
-import {using} from "rxjs";
 import {Router} from "@angular/router";
-import {JwtResponse} from "../model/JwtResponse";
-import {TokenStorageService} from "../service/TokenStorageService";
+import {UserStorageService} from "../service/user-storage.service";
 import {first} from "rxjs/operators";
 import {NgForm} from "@angular/forms";
 import {ErrorMessage} from "../model/ErrorMessage";
@@ -18,7 +16,7 @@ export class SignupComponent implements OnInit {
 
   user:User=new User();
   errorMsg:String="";
-  constructor(private  authService:AuthService, private tokenService: TokenStorageService,private router:Router) { }
+  constructor(private  authService:AuthService, private tokenService: UserStorageService, private router:Router) { }
 
   ngOnInit(): void {
   }

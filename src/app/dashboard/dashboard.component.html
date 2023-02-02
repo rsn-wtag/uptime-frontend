@@ -6,7 +6,7 @@
         <mat-card-content>
           <div class="list-container">
             <mat-list class="list" *ngFor="let website of websiteList" [style.background]="'amber'" >
-              <mat-list-item ><a  class="spacer" (click)="monitor(website)">{{website.websiteName==null ? website.url:website.websiteName}}</a>
+              <mat-list-item ><a  class="spacer" (click)="onListItemClick(website)">{{website.websiteName==null ? website.url:website.websiteName}}</a>
                 <mat-icon class="edit" (click)="edit(website.webId)">edit</mat-icon>
                 <mat-icon class="delete" (click)="removeWebsite(website.webId)">delete_outline</mat-icon>
                 <mat-divider></mat-divider>
