@@ -14,8 +14,13 @@ export class WebsiteService {
   }
 
   registerWebsite(registerWebsite: WebsiteDetails){
+    let url=registerWebsite.url;
+   /* if(registerWebsite.url) {
+      url= encodeURIComponent(registerWebsite.url.toString());
+      console.log(url+'----------------');
+    }*/
     return this.http.post(properties.apiUrl+'websites',
-      {url: registerWebsite.url,
+      {url: url,
         websiteName:registerWebsite.websiteName},
       {
         observe: 'response',
