@@ -31,6 +31,8 @@ export class EditUserComponent implements OnInit {
       this.userService.editUser(this.user).subscribe(data=>{
           this.msg="User updated successfully";
           const user= data.body;
+          // @ts-ignore
+         // console.log("--------------------"+user.userId);
          // @ts-ignore
           this.authService.saveUser(user);
       },

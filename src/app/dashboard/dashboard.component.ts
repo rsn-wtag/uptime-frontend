@@ -258,8 +258,12 @@ export class DashboardComponent implements OnInit , AfterViewInit{
       this.totalUptimePercentage=this.totalUptimePercentage+downtimeData.uptimePercentage;
       console.log(downtimeData.totalUpTime);
     });
+    if(this.downtimeHistory.length>0){
+      this.totalUptimePercentage=this.totalUptimePercentage/this.downtimeHistory.length;
+    }else{
+      this.totalUptimePercentage=100;
+    }
 
-    this.totalUptimePercentage=this.totalUptimePercentage/this.downtimeHistory.length;
     const ctx = document.getElementById('historyChartId');
     if( this.historyChart)
       this.historyChart.destroy();
@@ -272,8 +276,8 @@ export class DashboardComponent implements OnInit , AfterViewInit{
           label: this.charLabel,
           data: historyChartData,
           borderWidth: 1,
-          borderColor: '#9FF4CE',
-          backgroundColor:'#6FF18A'
+          borderColor: '#6FF18A',
+          backgroundColor:'RGBA(111,241,134,0.2)'
         }]
       },
       options: {
@@ -282,10 +286,26 @@ export class DashboardComponent implements OnInit , AfterViewInit{
           y: {
             beginAtZero: true,
             max:84600,
-
+          }
+        },
+      plugins:{
+        tooltip:{
+          callbacks:{
+            title: function (context){
+              return 'Date: ' +context[0].label;
+            },
+            label: function (context){
+              return 'Total uptime: '+ context.formattedValue + ' sec';
+            },
+            footer:function (context){
+              console.log(context);
+              const activePercentage=((context[0].parsed.y/86400)*100).toFixed(2);
+              return activePercentage + ' % Active';
+            }
           }
         }
-      }
+      }  },
+
     });
 
   }
@@ -302,7 +322,7 @@ export class DashboardComponent implements OnInit , AfterViewInit{
         labels: ['Up', 'Down'],
         datasets: [{
           //label: this.charLabel,
-          data: [this.totalUptimePercentage, 100.00-this.totalUptimePercentage],
+          data: [ this.totalUptimePercentage,  100.00-this.totalUptimePercentage],
           backgroundColor:['#0AD234','#D2190A']
 
         }]
@@ -311,7 +331,7 @@ export class DashboardComponent implements OnInit , AfterViewInit{
         plugins: {
           title: {
             display: true,
-            text: this.totalUptimePercentage + '% Active'
+            text: this.totalUptimePercentage.toFixed(4) + '% Active'
           }
         },
         tooltips: {
@@ -403,12 +423,14 @@ export class DashboardComponent implements OnInit , AfterViewInit{
   checkIsDown(currMoment:Moment){
     let isDown:boolean=false;
     this.downtimeList.forEach(downtime=>{
-      console.log('=========='+currMoment.toDate()+"        "+ downtime.downTimeId+"     "+new Date(downtime.startTime)+'    '+ new Date(downtime.endTime));
+      //console.log('=========='+currMoment.toDate()+"        "+ downtime.downTimeId+"     "+new Date(downtime.startTime)+'    '+ new Date(downtime.endTime));
       let endTime;
       if(downtime.endTime) endTime = downtime.endTime;
       else { // @ts-ignore
         endTime= moment().utc();
       }
+      //console.log("----------------------------------"+endTime);
+      //console.log("----------------------------------"+currMoment.isBetween( downtime.startTime, endTime));
       if(currMoment.isBetween( downtime.startTime, endTime))
         isDown=true;
     });
